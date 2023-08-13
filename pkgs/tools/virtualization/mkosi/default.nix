@@ -7,14 +7,14 @@
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "mkosi";
-  version = "14";
+  version = "15";
   format = "pyproject";
 
   src = fetchFromGitHub {
     owner = "systemd";
     repo = "mkosi";
-    rev = "b37ea9bc02e774502f80f3a622b0fe999e193c35";
-    hash = "sha256-6Mu0pvW6izSpjePkZXZ27DsukfMfFvLoDsmn599WW7I=";
+    rev = "06eaadf1213763ecd6f9edc519fd4e2cd63d0966";
+    hash = "sha256-iJ9o0AX3kfppT57yFJw7mUDPspgfQpWS9y9ayfu+wGk=";
   };
 
   # Fix ctypes finding library
