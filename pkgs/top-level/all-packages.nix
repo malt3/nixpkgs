@@ -1844,6 +1844,8 @@ with pkgs;
 
   mgmt = callPackage ../applications/system/mgmt { };
 
+  mkosi = callPackage ../tools/virtualization/mkosi {};
+
   monica = callPackage ../servers/web-apps/monica { };
 
   mprocs = callPackage ../tools/misc/mprocs { };
