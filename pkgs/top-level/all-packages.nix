@@ -3327,6 +3327,8 @@ with pkgs;
 
   async-profiler = callPackage ../development/tools/async-profiler { };
 
+  athens = callPackage ../servers/athens { };
+
   atheme = callPackage ../servers/irc/atheme { };
 
   atinout = callPackage ../tools/networking/atinout { };
