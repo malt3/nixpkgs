@@ -39,7 +39,7 @@ assert stdenv.isDarwin -> !x11Support;
 assert stdenv.isDarwin -> !waylandSupport;
 rustPlatform.buildRustPackage rec {
   pname = "espanso";
-  version = "2.2.2-pre";
+  version = "2.2-unstable-2024-05-14";
 
   src = fetchFromGitHub {
     owner = "espanso";
@@ -54,10 +54,6 @@ rustPlatform.buildRustPackage rec {
       "yaml-rust-0.4.6" = "sha256-wXFy0/s4y6wB3UO19jsLwBdzMy7CGX4JoUt5V6cU7LU=";
     };
   };
-
-  cargoPatches = lib.optionals stdenv.isDarwin [
-    ./inject-wx-on-darwin.patch
-  ];
 
   nativeBuildInputs = [
     extra-cmake-modules
