@@ -43,7 +43,7 @@
   # Always assume all markers valid (this is needed because we remove markers; they are non-deterministic).
   # Also, don't clean up environment variables (so that NIX_ environment variables are passed to compilers).
 , enableNixHacks ? false
-, version ? "7.1.2"
+, version ? "7.2.0rc1"
 }:
 
 let
@@ -51,7 +51,7 @@ let
 
   src = fetchurl {
     url = "https://github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-dist.zip";
-    hash = "sha256-nPbtIxnIFpGdlwFe720MWULNGu1I4DxzuggV2VPtYas=";
+    hash = "sha256-A2O7Nq03ogZbaO7eCkOXJE0cyeD4y+w/FAXpS4jy32E=";
   };
 
   # Use builtins.fetchurl to avoid IFD, in particular on hydra
@@ -71,9 +71,11 @@ let
     # should not need any extra external deps. But our nonprebuilt java
     # toolchains hack needs just one non bundled dep.
     requiredDepNamePredicate = name:
-      null != builtins.match "rules_java~.*~toolchains~remote_java_tools" name;
+      null != builtins.match "rules_java~.*~toolchains~remote_java_tools" name
+      || null != builtins.match ".*protobuf.*" name || true;
+    # requiredDepNamePredicate = name:
+    #   true;
   };
-
   defaultShellUtils =
     # Keep this list conservative. For more exotic tools, prefer to use
     # @rules_nixpkgs to pull in tools from the nix repository. Example:
@@ -354,10 +356,10 @@ stdenv.mkDerivation rec {
           -e "/bazel_build /a\  --experimental_strict_java_deps=off \\\\" \
           -e "/bazel_build /a\  --strict_proto_deps=off \\\\" \
           -e "/bazel_build /a\  --toolchain_resolution_debug='@bazel_tools//tools/jdk:(runtime_)?toolchain_type' \\\\" \
-          -e "/bazel_build /a\  --tool_java_runtime_version=local_jdk_17 \\\\" \
-          -e "/bazel_build /a\  --java_runtime_version=local_jdk_17 \\\\" \
-          -e "/bazel_build /a\  --tool_java_language_version=17 \\\\" \
-          -e "/bazel_build /a\  --java_language_version=17 \\\\" \
+          -e "/bazel_build /a\  --tool_java_runtime_version=local_jdk_21 \\\\" \
+          -e "/bazel_build /a\  --java_runtime_version=local_jdk_21 \\\\" \
+          -e "/bazel_build /a\  --tool_java_language_version=21 \\\\" \
+          -e "/bazel_build /a\  --java_language_version=21 \\\\" \
           -e "/bazel_build /a\  --extra_toolchains=@bazel_tools//tools/jdk:all \\\\" \
 
         # Also build parser_deploy.jar with bootstrap bazel
@@ -569,6 +571,12 @@ stdenv.mkDerivation rec {
   dontPatchELF = true;
 
   passthru = {
+    bazelToolsCache = callPackage ./bazel-tools-cache.nix {
+      bazel = bazel_self;
+      inherit version;
+      # TODO: make platform specific
+      outputHash = "sha256-i5TpniqTF5qyAHWLye5dQuFPcfpsTq/XRVvfbcV+qdY=";
+    };
     # Additional tests that check bazel’s functionality. Execute
     #
     #     nix-build . -A bazel_7.tests

@@ -7,7 +7,7 @@
 , extraBazelArgs ? ""
 , fetchFromGitHub
 , fetchurl
-, jdk11_headless
+, jdk17_headless
 , lib
 , libtool
 , lndir
@@ -49,7 +49,7 @@ let
 
   mergedRepoCache = symlinkJoin {
     name = "mergedDistDir";
-    paths = [ protobufRepoCache distDir ];
+    paths = [ protobufRepoCache distDir bazel.bazelToolsCache ];
   };
 
   MODULE = writeText "MODULE.bazel" ''
@@ -133,7 +133,7 @@ let
     inherit workspaceDir;
     bazelPkg = bazel;
     buildInputs = [
-      (if lib.strings.versionOlder bazel.version "5.0.0" then openjdk8 else jdk11_headless)
+      (if lib.strings.versionOlder bazel.version "5.0.0" then openjdk8 else jdk17_headless)
       tree
       bazel
     ]
@@ -152,11 +152,11 @@ let
         --verbose_failures \
         //... \
     '' + lib.optionalString (lib.strings.versionOlder bazel.version "5.0.0") ''
-        --host_javabase='@local_jdk//:jdk' \
-        --java_toolchain='@bazel_tools//tools/jdk:toolchain_hostjdk8' \
-        --javabase='@local_jdk//:jdk' \
+      --host_javabase='@local_jdk//:jdk' \
+      --java_toolchain='@bazel_tools//tools/jdk:toolchain_hostjdk8' \
+      --javabase='@local_jdk//:jdk' \
     '' + lib.optionalString (stdenv.isDarwin) ''
-        --cxxopt=-x --cxxopt=c++ --host_cxxopt=-x --host_cxxopt=c++ \
+      --cxxopt=-x --cxxopt=c++ --host_cxxopt=-x --host_cxxopt=c++ \
     '' + ''
 
     '';

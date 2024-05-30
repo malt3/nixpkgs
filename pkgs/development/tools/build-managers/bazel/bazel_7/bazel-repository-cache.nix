@@ -52,6 +52,21 @@ let
         value.moduleExtensions
     else acc;
 
+
+  # a foldl' for registryFileHashes
+  # given .registryFileHashes.<url>, collect "registryFile~<url>" -> {url, hash}
+  # TODO: handle source.json files
+  foldlRegistryFileHashes = op: acc: value:
+    if builtins.isAttrs value && value ? registryFileHashes
+    then
+      lib.foldlAttrs
+        (_acc: registryFileSrcURL: registryFileHash: (
+          op _acc { inherit registryFileSrcURL; } registryFileHash
+        ))
+        acc
+        value.registryFileHashes
+    else acc;
+
   # remove the "--" prefix, abusing undocumented negative substring length
   sanitize = str:
     if modulesVersion < 3
@@ -59,7 +74,9 @@ let
     else str;
 
   unmangle_name = mangledName:
-    if mangledName ? moduleDepGraphName
+    if lib.debug.traceVal mangledName ? registryFileSrcURL
+    then "registryFile~${mangledName.registryFileSrcURL}"
+    else if mangledName ? moduleDepGraphName
     then builtins.replaceStrings [ "@" ] [ "~" ] mangledName.moduleDepGraphName
     else
     # given moduleExtensionName = "@scope~//path/to:extension.bzl%extension"
@@ -145,8 +162,29 @@ let
     then addSources acc
     else acc;
 
+  extract_registry_file_source = f: acc: mangledName: hash:
+    let
+      entry = hash: url: name: {
+        ${hash} = fetchurl {
+          name = "source"; # just like fetch*, to get some deduplication
+          urls = [ url ];
+          sha256 = hash;
+          passthru.sha256 = hash;
+          passthru.source_name = name;
+          passthru.urls = [ url ];
+        };
+      };
+      args = lib.debug.traceVal { inherit mangledName hash; args = true; };
+      name = lib.debug.traceVal unmangle_name mangledName;
+    in
+    if f name
+    then acc // lib.debug.traceVal (entry hash mangledName.registryFileSrcURL name)
+    else acc;
+
   requiredSourcePredicate = n: requiredDepNamePredicate (sanitize n);
-  requiredDeps = foldlModuleDepGraph (extract_source requiredSourcePredicate) { } modules // foldlGeneratedRepoSpecs (extract_source requiredSourcePredicate) { } modules;
+  requiredDeps = foldlModuleDepGraph (extract_source requiredSourcePredicate) { } modules
+    // foldlGeneratedRepoSpecs (extract_source requiredSourcePredicate) { } modules
+    // foldlRegistryFileHashes (extract_registry_file_source requiredSourcePredicate) { } modules;
 
   command = ''
     mkdir -p $out/content_addressable/sha256

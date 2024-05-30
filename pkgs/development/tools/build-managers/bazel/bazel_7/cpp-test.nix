@@ -19,13 +19,21 @@
 let
 
   localDistDir = callPackage ./bazel-repository-cache.nix {
+    # Update lockfile by entering the environment with the following commands:
+    # nix-shell -A bazel_7.tests.vanilla.cpp
+    # source $stdenv/setup
+    # genericBuild
+    # rm MODULE.bazel.lock
+    # /nix/store/<hash>-bazel-<version>/bin/bazel mod deps --lockfile_mode=update
+    # cd .. # exit wd
+    # cp wd/MODULE.bazel.lock pkgs/development/tools/build-managers/bazel/bazel_7/cpp-test-MODULE.bazel.lock
     lockfile = ./cpp-test-MODULE.bazel.lock;
 
     # Take all the rules_ deps, bazel_ deps and their transitive dependencies,
     # but none of the platform-specific binaries, as they are large and useless.
     requiredDepNamePredicate = name:
       null == builtins.match ".*(macos|osx|linux|win|android|maven).*" name
-      && null != builtins.match "(platforms|com_google_|protobuf|rules_|bazel_|apple_support).*" name;
+      && null != builtins.match "(platforms|com_google_|protobuf|rules_|bazel_|apple_support|registryFile).*" name;
   };
 
   mergedDistDir = symlinkJoin {

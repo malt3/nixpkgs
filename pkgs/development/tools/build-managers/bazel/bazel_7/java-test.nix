@@ -8,7 +8,7 @@
 , extraBazelArgs ? ""
 , lib
 , openjdk8
-, jdk11_headless
+, jdk17_headless
 , runLocal
 , runtimeShell
 , writeScript
@@ -26,7 +26,7 @@ let
     # but none of the platform-specific binaries, as they are large and useless.
     requiredDepNamePredicate = name:
       null == builtins.match ".*(macos|osx|linux|win|apple|android|maven).*" name
-      && null != builtins.match "(platforms|com_google_|protobuf|rules_|bazel_).*" name ;
+      && null != builtins.match "(platforms|com_google_|protobuf|rules_|bazel_).*" name;
   };
 
   mergedDistDir = symlinkJoin {
@@ -49,7 +49,7 @@ let
     exec "$BAZEL_REAL" "$@"
   '';
 
-  workspaceDir = runLocal "our_workspace" {} (''
+  workspaceDir = runLocal "our_workspace" { } (''
     cp -r ${bazel-examples}/java-tutorial $out
     find $out -type d -exec chmod 755 {} \;
     cp ${./cpp-test-MODULE.bazel} $out/MODULE.bazel
@@ -64,7 +64,7 @@ let
     name = "bazel-test-java";
     inherit workspaceDir;
     bazelPkg = bazel;
-    buildInputs = [ (if lib.strings.versionOlder bazel.version "5.0.0" then openjdk8 else jdk11_headless) ];
+    buildInputs = [ (if lib.strings.versionOlder bazel.version "5.0.0" then openjdk8 else jdk17_headless) ];
     bazelScript = ''
       ${bazel}/bin/bazel \
         run \
@@ -79,11 +79,11 @@ let
         --strict_java_deps=off \
         //:ProjectRunner \
     '' + lib.optionalString (lib.strings.versionOlder bazel.version "5.0.0") ''
-        --host_javabase='@local_jdk//:jdk' \
-        --java_toolchain='@bazel_tools//tools/jdk:toolchain_hostjdk8' \
-        --javabase='@local_jdk//:jdk' \
+      --host_javabase='@local_jdk//:jdk' \
+      --java_toolchain='@bazel_tools//tools/jdk:toolchain_hostjdk8' \
+      --javabase='@local_jdk//:jdk' \
     '' + extraBazelArgs;
   };
 
-in testBazel
-
+in
+testBazel
