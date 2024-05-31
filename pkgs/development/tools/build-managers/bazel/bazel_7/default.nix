@@ -43,7 +43,7 @@
   # Always assume all markers valid (this is needed because we remove markers; they are non-deterministic).
   # Also, don't clean up environment variables (so that NIX_ environment variables are passed to compilers).
 , enableNixHacks ? false
-, version ? "7.2.0rc1"
+, version ? "7.2.0rc2"
 }:
 
 let
@@ -51,7 +51,7 @@ let
 
   src = fetchurl {
     url = "https://github.com/bazelbuild/bazel/releases/download/${version}/bazel-${version}-dist.zip";
-    hash = "sha256-A2O7Nq03ogZbaO7eCkOXJE0cyeD4y+w/FAXpS4jy32E=";
+    hash = "sha256-KCRZ2UBgqUNx37fQPgX6KPPgajD4SvyBHTKg5plRrFQ=";
   };
 
   # Use builtins.fetchurl to avoid IFD, in particular on hydra
@@ -575,7 +575,7 @@ stdenv.mkDerivation rec {
       bazel = bazel_self;
       inherit version;
       # TODO: make platform specific
-      outputHash = "sha256-i5TpniqTF5qyAHWLye5dQuFPcfpsTq/XRVvfbcV+qdY=";
+      outputHash = "";
     };
     # Additional tests that check bazel’s functionality. Execute
     #
