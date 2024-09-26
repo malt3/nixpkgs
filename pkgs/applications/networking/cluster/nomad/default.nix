@@ -1,6 +1,5 @@
 { lib
 , buildGoModule
-, buildGo121Module
 , buildGo122Module
 , fetchFromGitHub
 , nixosTests
@@ -62,7 +61,7 @@ rec {
   nomad_1_5 = throwUnsupportaed "nomad_1_5";
 
   nomad_1_6 = generic {
-    buildGoModule = buildGo121Module;
+    buildGoModule = buildGo122Module;
     version = "1.6.10";
     sha256 = "sha256-kiMdpJzjF0S7lrTX3sBFkWm0Gac9a+qlwCPcMKeVXXQ=";
     vendorHash = "sha256-qnsPPV/NWTrqUa1v1CL16WfCH7B0zW9ZSnEmtqvotqI=";
