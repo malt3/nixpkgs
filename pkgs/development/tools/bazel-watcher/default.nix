@@ -2,7 +2,7 @@
 , bazel_5
 , fetchFromGitHub
 , git
-, go_1_21
+, go_1_22
 , python3
 , lib, stdenv
 }:
@@ -38,7 +38,7 @@ buildBazelPackage rec {
     hash = "sha256-lreGKA0DZiOd1bJq8NNQ+80cyDwiughoXCkKu1RaZmc=";
   };
 
-  nativeBuildInputs = [ go_1_21 git python3 ];
+  nativeBuildInputs = [ go_1_22 git python3 ];
   removeRulesCC = false;
 
   bazel = bazel_5;
